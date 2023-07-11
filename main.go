@@ -14,7 +14,7 @@ type Movie struct {
 	ID string `json:"id"`
 	Isbn string `json:"Isbn"` 
 	Title string `json:"title"`
-	Director *Director `json: "director"`
+	Director *Director `json:"director"`
 
 }
 
@@ -24,6 +24,62 @@ type Director struct{
 }
 
 var movies []Movie
+
+func getMovies(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(movies)
+}
+
+func deleteMovie(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	parans := mux.Vars(r)
+	for index, item := range movies {
+		if item.ID==parans["id"]{
+			movies = append(movies[:index], movies[index+1:]...)
+			break
+		}
+	}
+	json.NewEncoder(w).Encode(movies)
+}
+
+func getMovie(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	parans := mux.Vars(r)
+	for  _, item := range movies {
+		if item.ID==parans["id"] {
+			json.NewEncoder(w).Encode(item)
+			return
+		}
+	}
+}
+
+func createMovie(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	var movie Movie
+	_=json.NewDecoder(r.Body).Decode(&movie)
+	movie.ID= strconv.Itoa(rand.Intn(100000000))
+	movies = append(movies, movie)
+	json.NewEncoder(w).Encode(movie)
+}
+
+func updateMovie(w http.ResponseWriter, r *http.Request){
+	// set json content type
+	w.Header().Set("Content-type", "application/json")
+	// parans
+	parans := mux.Vars(r)
+
+	for index, item := range movies {
+		if item.ID==parans["id"]{
+			movies = append(movies[:index], movies[index+1:]...)
+			var movie Movie
+		_=json.NewDecoder(r.Body).Decode(&movie)
+			movie.ID= parans["id"]
+		movies = append(movies, movie)
+		json.NewEncoder(w).Encode(movie)
+
+		}
+	}
+}
 
 func main() {
 	r := mux.NewRouter()
